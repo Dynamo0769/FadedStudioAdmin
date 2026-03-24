@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1E232E"
+    android:layout_margin="12dp"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvAdminApptRef"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ref: 44332"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvAdminApptService"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Service: Fade"
+        android:textColor="#BBBBBB"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/tvAdminApptStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status: Pending"
+        android:textColor="#D4AF37"
+        android:layout_marginTop="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/btnAcceptAppt"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Accept"
+            android:backgroundTint="#D4AF37"
+            android:textColor="#000000"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btnRejectAppt"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Reject"
+            android:backgroundTint="#444444"
+            android:textColor="#FFFFFF"/>
+    </LinearLayout>
+</LinearLayout>

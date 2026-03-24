@@ -1,0 +1,11 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121621">
+    <FrameLayout android:id="@+id/adminFragmentContainer" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_above="@id/adminBottomNav" />
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/adminBottomNav" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" android:background="#1E232E"
+        app:itemIconTint="#FFFFFF" app:itemTextColor="#FFFFFF" app:menu="@menu/admin_bottom_nav" />
+</RelativeLayout>

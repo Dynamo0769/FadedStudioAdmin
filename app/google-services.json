@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "678066376417",
+    "project_id": "fadedstudio",
+    "storage_bucket": "fadedstudio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:678066376417:android:d0ef4696fdbca5dd66f1a0",
+        "android_client_info": {
+          "package_name": "com.example.fadedstudio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "678066376417-q1vs1u91mqhdmn9nmgijaefr3f4vfv4h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fadedstudio",
+            "certificate_hash": "03fd13e2ac13b0640ea54411cccecbc8b5a67a2f"
+          }
+        },
+        {
+          "client_id": "678066376417-asjt642pool2cgdobjm9suh2u5det1v0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAt4sKhKIQMejFM_fw8E4bzks6l_I0JMyc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "678066376417-asjt642pool2cgdobjm9suh2u5det1v0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:678066376417:android:4c24998e8004a0be66f1a0",
+        "android_client_info": {
+          "package_name": "com.example.fadedstudioadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "678066376417-asjt642pool2cgdobjm9suh2u5det1v0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAt4sKhKIQMejFM_fw8E4bzks6l_I0JMyc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "678066376417-asjt642pool2cgdobjm9suh2u5det1v0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

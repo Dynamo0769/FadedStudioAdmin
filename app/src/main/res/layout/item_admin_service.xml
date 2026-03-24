@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1E232E"
+    android:layout_margin="10dp"
+    android:padding="15dp">
+
+    <TextView
+        android:id="@+id/tvAdminServiceName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Service Name"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvAdminServicePrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="₱100"
+        android:textColor="#D4AF37"
+        android:layout_marginTop="4dp"/>
+
+    <Button
+        android:id="@+id/btnEditRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:text="Edit/Remove"
+        android:textSize="10sp"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="#FFFFFF"
+        android:textColor="#000000"/>
+</LinearLayout>

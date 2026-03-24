@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121621"
+    tools:ignore="HardcodedText,Autofill">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit Services"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Service Image (Tap to upload)"
+            android:textColor="#BBBBBB"/>
+
+        <ImageView
+            android:id="@+id/ivServiceImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="#1E232E"
+            android:src="@android:drawable/ic_menu_camera"
+            android:contentDescription="Upload Service Photo"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Name" android:textColor="#BBBBBB"/>
+        <EditText
+            android:id="@+id/etServiceName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#1E232E"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"
+            android:inputType="text"
+            android:hint="Enter haircut name"
+            android:textColorHint="#555555"
+            android:importantForAutofill="no"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Detail" android:textColor="#BBBBBB"/>
+        <EditText
+            android:id="@+id/etServiceDetail"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="#1E232E"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:hint="Enter haircut description"
+            android:textColorHint="#555555"
+            android:importantForAutofill="no"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Price" android:textColor="#BBBBBB"/>
+        <EditText
+            android:id="@+id/etServicePrice"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#1E232E"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"
+            android:inputType="numberDecimal"
+            android:hint="0.00"
+            android:textColorHint="#555555"
+            android:importantForAutofill="no"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Duration" android:textColor="#BBBBBB"/>
+        <EditText
+            android:id="@+id/etServiceDuration"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#1E232E"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"
+            android:inputType="text"
+            android:hint="e.g., 30 mins"
+            android:textColorHint="#555555"
+            android:importantForAutofill="no"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp"/>
+
+        <Button
+            android:id="@+id/btnSaveService"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Save Service"
+            android:backgroundTint="#D4AF37"
+            android:textColor="#000000"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+</ScrollView>
