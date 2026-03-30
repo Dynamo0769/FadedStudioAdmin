@@ -5,57 +5,64 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class AdminAppointmentAdapter(
     private var appointments: List<Appointment>,
-    private val onActionClick: (Appointment, String) -> Unit
-) : RecyclerView.Adapter<AdminAppointmentAdapter.ViewHolder>() {
+    private val onAcceptClick: (Appointment) -> Unit, // Callback for Accept
+    private val onRejectClick: (Appointment) -> Unit  // Callback for Reject
+) : RecyclerView.Adapter<AdminAppointmentAdapter.AppointmentViewHolder>() {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvServiceName: TextView = view.findViewById(R.id.tvService)
-        val tvUserEmail: TextView = view.findViewById(R.id.tvRef)
-        val tvStatus: TextView = view.findViewById(R.id.tvStatus)
+    class AppointmentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val tvName: TextView = view.findViewById(R.id.tvCustomerName)
+        val tvService: TextView = view.findViewById(R.id.tvAptService)
+        val tvDateTime: TextView = view.findViewById(R.id.tvAptDateTime)
+        val tvStatus: TextView = view.findViewById(R.id.tvAptStatus)
+        val llActionButtons: LinearLayout = view.findViewById(R.id.llActionButtons)
         val btnAccept: Button = view.findViewById(R.id.btnAccept)
         val btnReject: Button = view.findViewById(R.id.btnReject)
-        val layoutButtons: LinearLayout = view.findViewById(R.id.layoutButtons)
-        val progressBar: ProgressBar = view.findViewById(R.id.progressBarUpdate)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppointmentViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_admin_appointment, parent, false)
-        return ViewHolder(view)
+        return AppointmentViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = appointments[position]
+    override fun onBindViewHolder(holder: AppointmentViewHolder, position: Int) {
+        val apt = appointments[position]
 
-        holder.tvServiceName.text = item.serviceName ?: "Unknown Service"
-        holder.tvUserEmail.text = item.userEmail ?: "No Email"
+        holder.tvName.text = "User ID: ${apt.userId.take(8)}..."
+        holder.tvService.text = "Service: ${apt.serviceName}"
+        holder.tvDateTime.text = apt.dateTime
 
-        val currentStatus = item.status?.uppercase() ?: "PENDING"
-        holder.tvStatus.text = "STATUS: $currentStatus"
+        // Check if it's pending
+        val isPending = apt.status.equals("To be confirm", true) || apt.status.equals("Pending", true)
+        val displayStatus = if (isPending) "PENDING" else apt.status.uppercase()
+        holder.tvStatus.text = displayStatus
 
-        when (currentStatus) {
-            "ACCEPTED" -> holder.tvStatus.setTextColor(Color.GREEN)
-            "REJECTED" -> holder.tvStatus.setTextColor(Color.RED)
-            else -> holder.tvStatus.setTextColor(Color.parseColor("#FFD700"))
+        // MAGIC: Show buttons ONLY if it's pending!
+        holder.llActionButtons.visibility = if (isPending) View.VISIBLE else View.GONE
+
+        // Colors
+        when (displayStatus) {
+            "PENDING" -> holder.tvStatus.setTextColor(Color.parseColor("#FFA500"))
+            "ACCEPTED" -> holder.tvStatus.setTextColor(Color.parseColor("#00FF00"))
+            "REJECTED" -> holder.tvStatus.setTextColor(Color.parseColor("#FF0000"))
+            else -> holder.tvStatus.setTextColor(Color.parseColor("#FFFFFF"))
         }
 
-        if (item.isUpdating) {
-            holder.progressBar.visibility = View.VISIBLE
-            holder.layoutButtons.visibility = View.GONE
-        } else {
-            holder.progressBar.visibility = View.GONE
-            holder.layoutButtons.visibility = if (currentStatus == "PENDING") View.VISIBLE else View.GONE
-        }
-
-        holder.btnAccept.setOnClickListener { onActionClick(item, "ACCEPTED") }
-        holder.btnReject.setOnClickListener { onActionClick(item, "REJECTED") }
+        // Button Clicks
+        holder.btnAccept.setOnClickListener { onAcceptClick(apt) }
+        holder.btnReject.setOnClickListener { onRejectClick(apt) }
     }
 
     override fun getItemCount() = appointments.size
+
+    fun updateList(newList: List<Appointment>) {
+        appointments = newList
+        notifyDataSetChanged()
+    }
 }
