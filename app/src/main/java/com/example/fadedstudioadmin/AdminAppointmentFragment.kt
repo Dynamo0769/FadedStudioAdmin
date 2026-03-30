@@ -19,6 +19,7 @@ class AdminAppointmentFragment : Fragment() {
     private lateinit var rvAppointments: RecyclerView
     private lateinit var btnPending: Button
     private lateinit var btnAccepted: Button
+    private lateinit var btnCompleted: Button // New button
     private lateinit var btnRejected: Button
     private lateinit var btnAll: Button
 
@@ -36,21 +37,24 @@ class AdminAppointmentFragment : Fragment() {
         rvAppointments = view.findViewById(R.id.rv_appointments)
         btnPending = view.findViewById(R.id.filter_pending)
         btnAccepted = view.findViewById(R.id.filter_accepted)
+        btnCompleted = view.findViewById(R.id.filter_completed) // Bind it
         btnRejected = view.findViewById(R.id.filter_rejected)
         btnAll = view.findViewById(R.id.filter_all)
 
         rvAppointments.layoutManager = LinearLayoutManager(context)
 
-        // Initialize adapter with our new click listeners
+        // Initialize adapter with ALL THREE click listeners
         adapter = AdminAppointmentAdapter(
             emptyList(),
             onAcceptClick = { apt -> updateStatusInFirebase(apt, "Accepted") },
-            onRejectClick = { apt -> updateStatusInFirebase(apt, "Rejected") }
+            onRejectClick = { apt -> updateStatusInFirebase(apt, "Rejected") },
+            onCompleteClick = { apt -> updateStatusInFirebase(apt, "Completed") }
         )
         rvAppointments.adapter = adapter
 
         btnPending.setOnClickListener { setFilter("Pending") }
         btnAccepted.setOnClickListener { setFilter("Accepted") }
+        btnCompleted.setOnClickListener { setFilter("Completed") } // New Listener
         btnRejected.setOnClickListener { setFilter("Rejected") }
         btnAll.setOnClickListener { setFilter("All") }
 
@@ -61,13 +65,11 @@ class AdminAppointmentFragment : Fragment() {
     }
 
     private fun updateStatusInFirebase(appointment: Appointment, newStatus: String) {
-        // Go to Firestore and update the status of this exact document
         db.collection("Appointments").document(appointment.appointmentId)
             .update("status", newStatus)
             .addOnSuccessListener {
                 Toast.makeText(context, "Appointment $newStatus!", Toast.LENGTH_SHORT).show()
-                // MAGIC: Instantly switch the tab filter to show the newly updated item
-                setFilter(newStatus)
+                setFilter(newStatus) // Jump to the tab you just sent it to!
             }
             .addOnFailureListener { e ->
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -82,6 +84,7 @@ class AdminAppointmentFragment : Fragment() {
 
         btnPending.backgroundTintList = if (filterType == "Pending") activeColor else inactiveColor
         btnAccepted.backgroundTintList = if (filterType == "Accepted") activeColor else inactiveColor
+        btnCompleted.backgroundTintList = if (filterType == "Completed") activeColor else inactiveColor
         btnRejected.backgroundTintList = if (filterType == "Rejected") activeColor else inactiveColor
         btnAll.backgroundTintList = if (filterType == "All") activeColor else inactiveColor
 
@@ -122,7 +125,6 @@ class AdminAppointmentFragment : Fragment() {
                     Log.e("FADED_ERROR", "Skipped broken appointment: ${document.id}")
                 }
             }
-            // Re-apply filter so the UI updates automatically when data changes
             applyFilter()
         }
     }

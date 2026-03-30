@@ -80,7 +80,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="12dp"
-            android:weightSum="2">
+            android:weightSum="2"
+            android:visibility="gone">
 
             <Button
                 android:id="@+id/btnReject"
@@ -102,5 +103,16 @@
                 android:backgroundTint="#006400"
                 android:textColor="#FFFFFF"/>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btnComplete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="MARK AS COMPLETED"
+            android:backgroundTint="#007BFF"
+            android:textColor="#FFFFFF"
+            android:visibility="gone"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

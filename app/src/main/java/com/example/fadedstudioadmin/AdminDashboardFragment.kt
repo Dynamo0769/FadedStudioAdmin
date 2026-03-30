@@ -53,11 +53,21 @@ class AdminDashboardFragment : Fragment() {
 
             val userList = mutableListOf<User>()
             for (doc in snapshots.documents) {
-                // Adjust field names based on how they are actually saved in your Firebase 'Users' collection
-                val name = doc.getString("name") ?: doc.getString("fullName") ?: "Unknown User"
+                // Grab firstName and lastName directly from your DB structure
+                val firstName = doc.getString("firstName") ?: ""
+                val lastName = doc.getString("lastName") ?: ""
+
+                // Stitch them together
+                val fullName = if (firstName.isNotBlank() || lastName.isNotBlank()) {
+                    "$firstName $lastName".trim()
+                } else {
+                    "Unknown User"
+                }
+
                 val email = doc.getString("email") ?: "No Email"
                 val phone = doc.getString("phone") ?: "N/A"
-                userList.add(User(doc.id, name, email, phone))
+
+                userList.add(User(doc.id, fullName, email, phone))
             }
             tvClientCount.text = userList.size.toString()
             adapter.updateList(userList)
@@ -97,8 +107,9 @@ class AdminDashboardFragment : Fragment() {
 
                 if (status.equals("Pending", true) || status.equals("To be confirm", true)) {
                     pendingCount++
-                } else if (status.equals("Accepted", true) || status.equals("Completed", true)) {
-                    // Match the accepted appointment service to our price list
+                }
+                // THE FIX: Only count revenue if the status is strictly "Completed"
+                else if (status.equals("Completed", true)) {
                     val price = servicePrices[serviceName] ?: 0.0
                     totalRevenue += price
                 }

@@ -36,6 +36,15 @@
                 android:layout_marginEnd="8dp"/>
 
             <Button
+                android:id="@+id/filter_completed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="COMPLETED"
+                android:backgroundTint="#333333"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
                 android:id="@+id/filter_rejected"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
