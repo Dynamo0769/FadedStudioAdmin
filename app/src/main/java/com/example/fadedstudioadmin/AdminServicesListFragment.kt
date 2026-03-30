@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,7 +20,6 @@ class AdminServicesListFragment : Fragment() {
     private val serviceList = mutableListOf<Service>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // MAKE SURE THIS MATCHES YOUR XML NAME EXACTLY
         val view = inflater.inflate(R.layout.fragment_admin_services_list, container, false)
 
         recyclerView = view.findViewById(R.id.rvServices)
@@ -31,8 +29,13 @@ class AdminServicesListFragment : Fragment() {
         adapter = AdminServiceAdapter(serviceList)
         recyclerView.adapter = adapter
 
+        // Magic Navigation Code: This opens your Add Service Screen!
         btnAddService.setOnClickListener {
-            Toast.makeText(context, "Add Service Clicked!", Toast.LENGTH_SHORT).show()
+            val addFragment = AdminAddServiceFragment()
+            parentFragmentManager.beginTransaction()
+                .replace((requireView().parent as ViewGroup).id, addFragment)
+                .addToBackStack(null) // This lets you use the back button to return to the list
+                .commit()
         }
 
         fetchServices()
