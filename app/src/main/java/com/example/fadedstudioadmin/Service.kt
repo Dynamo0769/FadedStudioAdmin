@@ -2,10 +2,9 @@ package com.example.fadedstudioadmin
 import java.io.Serializable
 
 data class Service(
-    val serviceId: String = "",
-    val name: String = "",
-    val detail: String = "",
-    val price: String = "",
-    val duration: String = "",
-    val imageUrl: String = ""
+    var serviceId: String = "",
+    var serviceName: String = "",
+    var price: String = "",
+    var duration: String = "",
+    var imageUrl: String = ""
 ) : Serializable
