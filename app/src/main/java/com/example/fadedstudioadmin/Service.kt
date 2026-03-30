@@ -1,10 +1,11 @@
 package com.example.fadedstudioadmin
+import java.io.Serializable
 
 data class Service(
-    val id: String = "",
-    val serviceName: String = "",
+    val serviceId: String = "",
+    val name: String = "",
     val detail: String = "",
-    val price: Double = 0.0,
+    val price: String = "",
     val duration: String = "",
-    val imageUrl: String = "" // New field for the image link
-)
+    val imageUrl: String = ""
+) : Serializable

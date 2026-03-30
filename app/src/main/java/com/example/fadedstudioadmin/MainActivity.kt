@@ -4,8 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
@@ -14,6 +16,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // --- GLIDE IMAGE LOADING START ---
+        val ivHeader = findViewById<ImageView>(R.id.ivLoginHeader)
+
+        // Your specific Google Drive image converted to a direct download link
+        val driveLink = "https://drive.google.com/uc?export=download&id=1KY1vo_5KhTB6oMFSbRqejBEfltP2q-gv"
+
+        // Load the image into the header using Glide (Zero red lines now!)
+        Glide.with(this)
+            .load(driveLink)
+            .into(ivHeader)
+        // --- GLIDE IMAGE LOADING END ---
 
         // Linking to your orange and dark UI
         val etEmail = findViewById<EditText>(R.id.etAdminEmail)

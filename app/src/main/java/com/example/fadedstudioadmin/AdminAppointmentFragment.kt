@@ -4,90 +4,70 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 
 class AdminAppointmentFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: AdminAppointmentAdapter
-    private var allAppointments = mutableListOf<Appointment>()
     private val db = FirebaseFirestore.getInstance()
-    private var currentFilter = "Pending"
+    private val fullList = mutableListOf<Appointment>()
+    private lateinit var adapter: AdminAppointmentAdapter
+    private var firebaseListener: ListenerRegistration? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_admin_appointments, container, false)
 
-        recyclerView = view.findViewById(R.id.rv_appointments)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        val rv = view.findViewById<RecyclerView>(R.id.rv_appointments)
+        rv.layoutManager = LinearLayoutManager(context)
 
-        adapter = AdminAppointmentAdapter(emptyList()) { appointmentId, newStatus ->
-            updateAppointmentStatus(appointmentId, newStatus)
+        adapter = AdminAppointmentAdapter(fullList) { appointment, newStatus ->
+            updateAppointmentStatus(appointment, newStatus)
         }
-        recyclerView.adapter = adapter
+        rv.adapter = adapter
 
-        val btnAll: Button = view.findViewById(R.id.filter_all)
-        val btnPending: Button = view.findViewById(R.id.filter_pending)
-        val btnAccepted: Button = view.findViewById(R.id.filter_accepted)
-        val btnRejected: Button = view.findViewById(R.id.filter_rejected)
-
-        btnAll.setOnClickListener { applyFilter("All") }
-        btnPending.setOnClickListener { applyFilter("Pending") }
-        btnAccepted.setOnClickListener { applyFilter("Accepted") }
-        btnRejected.setOnClickListener { applyFilter("Rejected") }
-
-        fetchAppointments()
-
+        startListening()
         return view
     }
 
-    private fun fetchAppointments() {
-        db.collection("Appointments").addSnapshotListener { snapshot, error ->
-            if (error != null || snapshot == null) return@addSnapshotListener
+    private fun startListening() {
+        firebaseListener = db.collection("Appointments")
+            .addSnapshotListener { snapshots, e ->
+                if (e != null) return@addSnapshotListener
 
-            allAppointments.clear()
-            for (document in snapshot.documents) {
-                val appt = document.toObject(Appointment::class.java)
-                if (appt != null) {
-                    if (appt.appointmentId.isEmpty()) {
-                        appt.appointmentId = document.id
-                    }
-                    allAppointments.add(appt)
+                fullList.clear()
+                snapshots?.forEach { doc ->
+                    val appt = doc.toObject(Appointment::class.java)
+                    appt.id = doc.id
+                    fullList.add(appt)
                 }
+                adapter.notifyDataSetChanged()
             }
-            applyFilter(currentFilter)
-        }
     }
 
-    private fun applyFilter(status: String) {
-        currentFilter = status
-        val filteredList = if (status == "All") {
-            allAppointments
-        } else {
-            allAppointments.filter { it.status.equals(status, ignoreCase = true) }
-        }
+    private fun updateAppointmentStatus(appt: Appointment, status: String) {
+        val docId = appt.id ?: return
+        appt.isUpdating = true
+        adapter.notifyDataSetChanged()
 
-        adapter.updateList(filteredList)
-    }
-
-    private fun updateAppointmentStatus(appointmentId: String, newStatus: String) {
-        val index = allAppointments.indexOfFirst { it.appointmentId == appointmentId }
-        if (index != -1) {
-            allAppointments[index].status = newStatus
-            applyFilter(currentFilter)
-        }
-
-        db.collection("Appointments").document(appointmentId)
-            .update("status", newStatus)
+        db.collection("Appointments").document(docId)
+            .update("status", status)
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Moved to $newStatus", Toast.LENGTH_SHORT).show()
+                appt.isUpdating = false
+                Toast.makeText(context, "Appointment $status", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), "Error updating database", Toast.LENGTH_SHORT).show()
+                appt.isUpdating = false
+                adapter.notifyDataSetChanged()
+                Toast.makeText(context, "Update Failed", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        firebaseListener?.remove()
     }
 }

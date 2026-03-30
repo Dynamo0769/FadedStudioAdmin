@@ -6,21 +6,22 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class AdminDashboardActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin_dashboard)
 
-        val bottomNav = findViewById<BottomNavigationView>(R.id.adminBottomNav)
+        val nav = findViewById<BottomNavigationView>(R.id.adminBottomNav)
 
-        // Start with Appointments screen as default
-        replaceFragment(AdminAppointmentFragment())
+        if (savedInstanceState == null) {
+            replaceFragment(AdminAppointmentFragment())
+        }
 
-        bottomNav.setOnItemSelectedListener { item ->
+        nav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_services -> replaceFragment(AdminAddServiceFragment())
+                R.id.nav_dashboard -> replaceFragment(AdminDashboardFragment())
+                R.id.nav_services -> replaceFragment(AdminServicesListFragment())
                 R.id.nav_appointments -> replaceFragment(AdminAppointmentFragment())
-                // Add Dashboard and Profile fragments here later
+                R.id.nav_profile -> replaceFragment(AdminProfileFragment())
             }
             true
         }

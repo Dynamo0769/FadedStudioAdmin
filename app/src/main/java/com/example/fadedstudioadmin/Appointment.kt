@@ -1,9 +1,9 @@
 package com.example.fadedstudioadmin
 
 data class Appointment(
-    var appointmentId: String = "",
-    var serviceName: String = "",
-    var price: Double = 0.0,
-    var status: String = "Pending",
-    var userEmail: String = ""
+    var id: String? = null,
+    val userEmail: String? = null,
+    val serviceName: String? = null,
+    var status: String? = "PENDING",
+    var isUpdating: Boolean = false
 )
