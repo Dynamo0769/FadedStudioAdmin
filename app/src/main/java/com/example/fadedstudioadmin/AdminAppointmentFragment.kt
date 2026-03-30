@@ -19,13 +19,14 @@ class AdminAppointmentFragment : Fragment() {
     private lateinit var rvAppointments: RecyclerView
     private lateinit var btnPending: Button
     private lateinit var btnAccepted: Button
-    private lateinit var btnCompleted: Button // New button
+    private lateinit var btnCompleted: Button
     private lateinit var btnRejected: Button
     private lateinit var btnAll: Button
 
     private lateinit var adapter: AdminAppointmentAdapter
     private val db = FirebaseFirestore.getInstance()
     private val allAppointments = mutableListOf<Appointment>()
+    private val userMap = mutableMapOf<String, String>()
     private var currentFilter = "Pending"
 
     override fun onCreateView(
@@ -37,15 +38,15 @@ class AdminAppointmentFragment : Fragment() {
         rvAppointments = view.findViewById(R.id.rv_appointments)
         btnPending = view.findViewById(R.id.filter_pending)
         btnAccepted = view.findViewById(R.id.filter_accepted)
-        btnCompleted = view.findViewById(R.id.filter_completed) // Bind it
+        btnCompleted = view.findViewById(R.id.filter_completed)
         btnRejected = view.findViewById(R.id.filter_rejected)
         btnAll = view.findViewById(R.id.filter_all)
 
         rvAppointments.layoutManager = LinearLayoutManager(context)
 
-        // Initialize adapter with ALL THREE click listeners
         adapter = AdminAppointmentAdapter(
             emptyList(),
+            userMap,
             onAcceptClick = { apt -> updateStatusInFirebase(apt, "Accepted") },
             onRejectClick = { apt -> updateStatusInFirebase(apt, "Rejected") },
             onCompleteClick = { apt -> updateStatusInFirebase(apt, "Completed") }
@@ -54,31 +55,69 @@ class AdminAppointmentFragment : Fragment() {
 
         btnPending.setOnClickListener { setFilter("Pending") }
         btnAccepted.setOnClickListener { setFilter("Accepted") }
-        btnCompleted.setOnClickListener { setFilter("Completed") } // New Listener
+        btnCompleted.setOnClickListener { setFilter("Completed") }
         btnRejected.setOnClickListener { setFilter("Rejected") }
         btnAll.setOnClickListener { setFilter("All") }
 
-        fetchAppointments()
-        setFilter("Pending")
+        fetchAllUserNames()
 
         return view
+    }
+
+    private fun fetchAllUserNames() {
+        // 1. Check 'users' (small u)
+        db.collection("users").addSnapshotListener { snapshots, _ ->
+            snapshots?.documents?.forEach { doc ->
+                val name = doc.getString("firstName") ?: "Customer"
+                userMap[doc.id] = name
+            }
+
+            // 2. ALSO Check 'Users' (Big U) for names
+            db.collection("Users").addSnapshotListener { snapshots2, _ ->
+                snapshots2?.documents?.forEach { doc ->
+                    // Some use 'firstName', some might use 'name' or 'fullName'
+                    val name = doc.getString("firstName") ?: doc.getString("name") ?: "Customer"
+                    userMap[doc.id] = name
+                }
+
+                // Now that we've checked BOTH places, get the appointments
+                fetchAppointments()
+            }
+        }
+    }
+
+    private fun fetchAppointments() {
+        db.collection("Appointments").addSnapshotListener { snapshots, error ->
+            if (error != null) return@addSnapshotListener
+
+            allAppointments.clear()
+            snapshots?.documents?.forEach { document ->
+                try {
+                    val apt = Appointment(
+                        appointmentId = document.id,
+                        userId = document.getString("userId") ?: "",
+                        serviceName = document.getString("serviceName") ?: "Unknown Service",
+                        dateTime = document.getString("dateTime") ?: "No Date",
+                        status = document.getString("status") ?: "Pending"
+                    )
+                    allAppointments.add(apt)
+                } catch (e: Exception) {}
+            }
+            applyFilter()
+        }
     }
 
     private fun updateStatusInFirebase(appointment: Appointment, newStatus: String) {
         db.collection("Appointments").document(appointment.appointmentId)
             .update("status", newStatus)
             .addOnSuccessListener {
-                Toast.makeText(context, "Appointment $newStatus!", Toast.LENGTH_SHORT).show()
-                setFilter(newStatus) // Jump to the tab you just sent it to!
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Status: $newStatus", Toast.LENGTH_SHORT).show()
+                setFilter(newStatus)
             }
     }
 
     private fun setFilter(filterType: String) {
         currentFilter = filterType
-
         val activeColor = ColorStateList.valueOf(Color.parseColor("#D4AF37"))
         val inactiveColor = ColorStateList.valueOf(Color.parseColor("#333333"))
 
@@ -94,38 +133,9 @@ class AdminAppointmentFragment : Fragment() {
     private fun applyFilter() {
         val filteredList = when (currentFilter) {
             "All" -> allAppointments
-            "Pending" -> allAppointments.filter {
-                it.status.equals("Pending", ignoreCase = true) ||
-                        it.status.equals("To be confirm", ignoreCase = true)
-            }
-            else -> allAppointments.filter { it.status.equals(currentFilter, ignoreCase = true) }
+            "Pending" -> allAppointments.filter { it.status.contains("Pending", true) || it.status.contains("confirm", true) }
+            else -> allAppointments.filter { it.status.equals(currentFilter, true) }
         }
-        adapter.updateList(filteredList)
-    }
-
-    private fun fetchAppointments() {
-        db.collection("Appointments").addSnapshotListener { snapshots, error ->
-            if (error != null) {
-                Log.e("FADED_ERROR", "Listen failed.", error)
-                return@addSnapshotListener
-            }
-
-            allAppointments.clear()
-            snapshots?.documents?.forEach { document ->
-                try {
-                    val apt = Appointment(
-                        appointmentId = document.id,
-                        userId = document.getString("userId") ?: "Unknown ID",
-                        serviceName = document.getString("serviceName") ?: "Unknown Service",
-                        dateTime = document.getString("dateTime") ?: "No Date",
-                        status = document.getString("status") ?: "Pending"
-                    )
-                    allAppointments.add(apt)
-                } catch (e: Exception) {
-                    Log.e("FADED_ERROR", "Skipped broken appointment: ${document.id}")
-                }
-            }
-            applyFilter()
-        }
+        adapter.updateData(filteredList, userMap)
     }
 }

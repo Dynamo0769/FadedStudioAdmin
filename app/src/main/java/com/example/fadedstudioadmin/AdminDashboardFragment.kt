@@ -21,8 +21,6 @@ class AdminDashboardFragment : Fragment() {
     private lateinit var adapter: AdminClientAdapter
 
     private val db = FirebaseFirestore.getInstance()
-
-    // Map to hold prices: ServiceName -> Price
     private val servicePrices = mutableMapOf<String, Double>()
 
     override fun onCreateView(
@@ -47,17 +45,16 @@ class AdminDashboardFragment : Fragment() {
     }
 
     private fun fetchDashboardData() {
-        // 1. Fetch Users (Client Base)
-        db.collection("Users").addSnapshotListener { snapshots, error ->
+        // THE FIX: Changed collection name from "Users" to "users" (lowercase)
+        // to match your DB with the phone numbers
+        db.collection("users").addSnapshotListener { snapshots, error ->
             if (error != null || snapshots == null) return@addSnapshotListener
 
             val userList = mutableListOf<User>()
             for (doc in snapshots.documents) {
-                // Grab firstName and lastName directly from your DB structure
                 val firstName = doc.getString("firstName") ?: ""
                 val lastName = doc.getString("lastName") ?: ""
 
-                // Stitch them together
                 val fullName = if (firstName.isNotBlank() || lastName.isNotBlank()) {
                     "$firstName $lastName".trim()
                 } else {
@@ -65,6 +62,8 @@ class AdminDashboardFragment : Fragment() {
                 }
 
                 val email = doc.getString("email") ?: "No Email"
+
+                // Now grabbing the actual "phone" field from your lowercase 'users' collection
                 val phone = doc.getString("phone") ?: "N/A"
 
                 userList.add(User(doc.id, fullName, email, phone))
@@ -73,13 +72,11 @@ class AdminDashboardFragment : Fragment() {
             adapter.updateList(userList)
         }
 
-        // 2. Fetch Services (Menu Items and Prices for Revenue calculation)
+        // Fetch Services for revenue calculation
         db.collection("Services").addSnapshotListener { snapshots, error ->
             if (error != null || snapshots == null) return@addSnapshotListener
-
             tvServiceCount.text = snapshots.size().toString()
             servicePrices.clear()
-
             for (doc in snapshots.documents) {
                 val serviceName = doc.getString("serviceName") ?: ""
                 val priceString = doc.getString("price") ?: "0"
@@ -88,40 +85,27 @@ class AdminDashboardFragment : Fragment() {
                     servicePrices[serviceName] = price
                 }
             }
-            // Once we have prices, fetch appointments to calculate revenue
             fetchAppointmentsData()
         }
     }
 
     private fun fetchAppointmentsData() {
-        // 3. Fetch Appointments (Pending Count and Total Revenue)
         db.collection("Appointments").addSnapshotListener { snapshots, error ->
             if (error != null || snapshots == null) return@addSnapshotListener
-
             var pendingCount = 0
             var totalRevenue = 0.0
-
             for (doc in snapshots.documents) {
                 val status = doc.getString("status") ?: ""
                 val serviceName = doc.getString("serviceName") ?: ""
-
                 if (status.equals("Pending", true) || status.equals("To be confirm", true)) {
                     pendingCount++
-                }
-                // THE FIX: Only count revenue if the status is strictly "Completed"
-                else if (status.equals("Completed", true)) {
+                } else if (status.equals("Completed", true)) {
                     val price = servicePrices[serviceName] ?: 0.0
                     totalRevenue += price
                 }
             }
-
             tvPendingCount.text = pendingCount.toString()
-            // Format revenue to drop decimals if it's a whole number
-            tvTotalRevenue.text = if (totalRevenue % 1.0 == 0.0) {
-                "₱${totalRevenue.toInt()}"
-            } else {
-                "₱${String.format("%.2f", totalRevenue)}"
-            }
+            tvTotalRevenue.text = if (totalRevenue % 1.0 == 0.0) "₱${totalRevenue.toInt()}" else "₱${String.format("%.2f", totalRevenue)}"
         }
     }
 }

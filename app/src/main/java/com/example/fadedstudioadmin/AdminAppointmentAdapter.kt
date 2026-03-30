@@ -11,9 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 
 class AdminAppointmentAdapter(
     private var appointments: List<Appointment>,
+    private var userMap: Map<String, String> = emptyMap(),
     private val onAcceptClick: (Appointment) -> Unit,
     private val onRejectClick: (Appointment) -> Unit,
-    private val onCompleteClick: (Appointment) -> Unit // New Callback
+    private val onCompleteClick: (Appointment) -> Unit
 ) : RecyclerView.Adapter<AdminAppointmentAdapter.AppointmentViewHolder>() {
 
     class AppointmentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -21,11 +22,10 @@ class AdminAppointmentAdapter(
         val tvService: TextView = view.findViewById(R.id.tvAptService)
         val tvDateTime: TextView = view.findViewById(R.id.tvAptDateTime)
         val tvStatus: TextView = view.findViewById(R.id.tvAptStatus)
-
         val llActionButtons: LinearLayout = view.findViewById(R.id.llActionButtons)
         val btnAccept: Button = view.findViewById(R.id.btnAccept)
         val btnReject: Button = view.findViewById(R.id.btnReject)
-        val btnComplete: Button = view.findViewById(R.id.btnComplete) // New Button
+        val btnComplete: Button = view.findViewById(R.id.btnComplete)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppointmentViewHolder {
@@ -36,7 +36,10 @@ class AdminAppointmentAdapter(
     override fun onBindViewHolder(holder: AppointmentViewHolder, position: Int) {
         val apt = appointments[position]
 
-        holder.tvName.text = "User ID: ${apt.userId.take(8)}..."
+        // Use the map to find the name. If not found, it shows "Unknown Customer"
+        val firstName = userMap[apt.userId] ?: "Unknown Customer"
+        holder.tvName.text = firstName
+
         holder.tvService.text = "Service: ${apt.serviceName}"
         holder.tvDateTime.text = apt.dateTime
 
@@ -46,20 +49,16 @@ class AdminAppointmentAdapter(
         val displayStatus = if (isPending) "PENDING" else apt.status.uppercase()
         holder.tvStatus.text = displayStatus
 
-        // MAGIC: Dynamic Button Visibility
         holder.llActionButtons.visibility = if (isPending) View.VISIBLE else View.GONE
         holder.btnComplete.visibility = if (isAccepted) View.VISIBLE else View.GONE
 
-        // Colors
         when (displayStatus) {
-            "PENDING" -> holder.tvStatus.setTextColor(Color.parseColor("#FFA500")) // Orange
-            "ACCEPTED" -> holder.tvStatus.setTextColor(Color.parseColor("#00FF00")) // Green
-            "COMPLETED" -> holder.tvStatus.setTextColor(Color.parseColor("#00BFFF")) // Cool Blue
-            "REJECTED" -> holder.tvStatus.setTextColor(Color.parseColor("#FF0000")) // Red
-            else -> holder.tvStatus.setTextColor(Color.parseColor("#FFFFFF"))
+            "PENDING" -> holder.tvStatus.setTextColor(Color.parseColor("#FFA500"))
+            "ACCEPTED" -> holder.tvStatus.setTextColor(Color.parseColor("#00FF00"))
+            "COMPLETED" -> holder.tvStatus.setTextColor(Color.parseColor("#00BFFF"))
+            "REJECTED" -> holder.tvStatus.setTextColor(Color.parseColor("#FF0000"))
         }
 
-        // Button Clicks
         holder.btnAccept.setOnClickListener { onAcceptClick(apt) }
         holder.btnReject.setOnClickListener { onRejectClick(apt) }
         holder.btnComplete.setOnClickListener { onCompleteClick(apt) }
@@ -67,8 +66,9 @@ class AdminAppointmentAdapter(
 
     override fun getItemCount() = appointments.size
 
-    fun updateList(newList: List<Appointment>) {
-        appointments = newList
+    fun updateData(newAppointments: List<Appointment>, newUserMap: Map<String, String>) {
+        this.appointments = newAppointments
+        this.userMap = newUserMap
         notifyDataSetChanged()
     }
 }
