@@ -8,8 +8,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class AdminServiceAdapter(private var services: List<Service>) :
-    RecyclerView.Adapter<AdminServiceAdapter.ServiceViewHolder>() {
+// Added a click listener to the constructor!
+class AdminServiceAdapter(
+    private var services: List<Service>,
+    private val onItemClick: (Service) -> Unit
+) : RecyclerView.Adapter<AdminServiceAdapter.ServiceViewHolder>() {
 
     class ServiceViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvName: TextView = view.findViewById(R.id.tvServiceName)
@@ -38,8 +41,12 @@ class AdminServiceAdapter(private var services: List<Service>) :
                 .load(service.imageUrl)
                 .into(holder.ivImage)
         } else {
-            // Clears the image view if there is no image URL
             holder.ivImage.setImageDrawable(null)
+        }
+
+        // MAGIC: When the whole card is clicked, pass the service data back to the fragment
+        holder.itemView.setOnClickListener {
+            onItemClick(service)
         }
     }
 

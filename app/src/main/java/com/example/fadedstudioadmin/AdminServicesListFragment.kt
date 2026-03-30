@@ -26,32 +26,42 @@ class AdminServicesListFragment : Fragment() {
         btnAddService = view.findViewById(R.id.btnAddService)
 
         recyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = AdminServiceAdapter(serviceList)
+
+        // Setup the adapter with the click listener
+        adapter = AdminServiceAdapter(serviceList) { clickedService ->
+            openAddEditScreen(clickedService)
+        }
         recyclerView.adapter = adapter
 
-        // Magic Navigation Code: This opens your Add Service Screen!
+        // Add Button opens the screen completely blank (null)
         btnAddService.setOnClickListener {
-            val addFragment = AdminAddServiceFragment()
-            parentFragmentManager.beginTransaction()
-                .replace((requireView().parent as ViewGroup).id, addFragment)
-                .addToBackStack(null) // This lets you use the back button to return to the list
-                .commit()
+            openAddEditScreen(null)
         }
 
         fetchServices()
-
         return view
+    }
+
+    private fun openAddEditScreen(serviceToEdit: Service?) {
+        val fragment = AdminAddServiceFragment()
+
+        // If we clicked a card, stuff its data into a Bundle to send to the next screen
+        if (serviceToEdit != null) {
+            val bundle = Bundle()
+            bundle.putSerializable("SERVICE_DATA", serviceToEdit)
+            fragment.arguments = bundle
+        }
+
+        parentFragmentManager.beginTransaction()
+            .replace((requireView().parent as ViewGroup).id, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun fetchServices() {
         db.collection("Services").addSnapshotListener { snapshots, error ->
-            if (error != null) {
-                Log.e("FADED_ERROR", "Error fetching services", error)
-                return@addSnapshotListener
-            }
-
+            if (error != null) return@addSnapshotListener
             val newList = mutableListOf<Service>()
-
             snapshots?.documents?.forEach { document ->
                 try {
                     val service = Service(
@@ -63,10 +73,9 @@ class AdminServicesListFragment : Fragment() {
                     )
                     newList.add(service)
                 } catch (e: Exception) {
-                    Log.e("FADED_ERROR", "Skipped broken document: ${document.id}")
+                    Log.e("FADED_ERROR", "Skipped broken document")
                 }
             }
-
             serviceList.clear()
             serviceList.addAll(newList)
             adapter.updateList(serviceList)
