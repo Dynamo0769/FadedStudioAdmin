@@ -43,15 +43,18 @@ class AdminAppointmentAdapter(
         holder.tvService.text = "Service: ${apt.serviceName}"
         holder.tvDateTime.text = apt.dateTime
 
-        val isPending = apt.status.equals("To be confirm", true) || apt.status.equals("Pending", true)
-        val isAccepted = apt.status.equals("Accepted", true)
+        // FIX: Made this more flexible so buttons ALWAYS show for new bookings
+        val isPending = apt.status.contains("confirm", ignoreCase = true) || apt.status.contains("Pending", ignoreCase = true)
+        val isAccepted = apt.status.equals("Accepted", ignoreCase = true)
 
         val displayStatus = if (isPending) "PENDING" else apt.status.uppercase()
         holder.tvStatus.text = displayStatus
 
+        // Show/Hide buttons based on real status
         holder.llActionButtons.visibility = if (isPending) View.VISIBLE else View.GONE
         holder.btnComplete.visibility = if (isAccepted) View.VISIBLE else View.GONE
 
+        // Color coding
         when (displayStatus) {
             "PENDING" -> holder.tvStatus.setTextColor(Color.parseColor("#FFA500"))
             "ACCEPTED" -> holder.tvStatus.setTextColor(Color.parseColor("#00FF00"))
@@ -59,6 +62,7 @@ class AdminAppointmentAdapter(
             "REJECTED" -> holder.tvStatus.setTextColor(Color.parseColor("#FF0000"))
         }
 
+        // Click Listeners
         holder.btnAccept.setOnClickListener { onAcceptClick(apt) }
         holder.btnReject.setOnClickListener { onRejectClick(apt) }
         holder.btnComplete.setOnClickListener { onCompleteClick(apt) }

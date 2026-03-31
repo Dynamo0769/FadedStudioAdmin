@@ -44,6 +44,7 @@ class AdminAppointmentFragment : Fragment() {
 
         rvAppointments.layoutManager = LinearLayoutManager(context)
 
+        // Setup Adapter with click actions
         adapter = AdminAppointmentAdapter(
             emptyList(),
             userMap,
@@ -53,34 +54,47 @@ class AdminAppointmentFragment : Fragment() {
         )
         rvAppointments.adapter = adapter
 
+        // Setup Filter Buttons
         btnPending.setOnClickListener { setFilter("Pending") }
         btnAccepted.setOnClickListener { setFilter("Accepted") }
         btnCompleted.setOnClickListener { setFilter("Completed") }
         btnRejected.setOnClickListener { setFilter("Rejected") }
         btnAll.setOnClickListener { setFilter("All") }
 
+        // Start fetching data
         fetchAllUserNames()
 
         return view
     }
 
     private fun fetchAllUserNames() {
-        // 1. Check 'users' (small u)
+        // 1. Check lowercase 'users'
         db.collection("users").addSnapshotListener { snapshots, _ ->
             snapshots?.documents?.forEach { doc ->
-                val name = doc.getString("firstName") ?: "Customer"
-                userMap[doc.id] = name
+                // FIX: Grab the actual 'uid' field, not the document ID
+                val uid = doc.getString("uid") ?: doc.id
+
+                val fName = doc.getString("firstName") ?: "Unknown"
+                val lName = doc.getString("lastName") ?: ""
+                val phone = doc.getString("phone") ?: "No phone"
+
+                // Bundle Name and Phone together with a line break!
+                userMap[uid] = "$fName $lName\n📞 $phone".trim()
             }
 
-            // 2. ALSO Check 'Users' (Big U) for names
+            // 2. Check uppercase 'Users' just in case
             db.collection("Users").addSnapshotListener { snapshots2, _ ->
                 snapshots2?.documents?.forEach { doc ->
-                    // Some use 'firstName', some might use 'name' or 'fullName'
-                    val name = doc.getString("firstName") ?: doc.getString("name") ?: "Customer"
-                    userMap[doc.id] = name
+                    val uid = doc.getString("uid") ?: doc.id
+
+                    val fName = doc.getString("firstName") ?: doc.getString("name") ?: "Unknown"
+                    val lName = doc.getString("lastName") ?: ""
+                    val phone = doc.getString("phone") ?: "No phone"
+
+                    userMap[uid] = "$fName $lName\n📞 $phone".trim()
                 }
 
-                // Now that we've checked BOTH places, get the appointments
+                // Now get appointments once mapping is done
                 fetchAppointments()
             }
         }
@@ -101,8 +115,11 @@ class AdminAppointmentFragment : Fragment() {
                         status = document.getString("status") ?: "Pending"
                     )
                     allAppointments.add(apt)
-                } catch (e: Exception) {}
+                } catch (e: Exception) {
+                    Log.e("AdminApp", "Error parsing appointment", e)
+                }
             }
+            // Real-time listener automatically updates the UI!
             applyFilter()
         }
     }
@@ -111,8 +128,10 @@ class AdminAppointmentFragment : Fragment() {
         db.collection("Appointments").document(appointment.appointmentId)
             .update("status", newStatus)
             .addOnSuccessListener {
-                Toast.makeText(context, "Status: $newStatus", Toast.LENGTH_SHORT).show()
-                setFilter(newStatus)
+                Toast.makeText(requireContext(), "Booking $newStatus!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed to update", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -133,8 +152,8 @@ class AdminAppointmentFragment : Fragment() {
     private fun applyFilter() {
         val filteredList = when (currentFilter) {
             "All" -> allAppointments
-            "Pending" -> allAppointments.filter { it.status.contains("Pending", true) || it.status.contains("confirm", true) }
-            else -> allAppointments.filter { it.status.equals(currentFilter, true) }
+            "Pending" -> allAppointments.filter { it.status.contains("Pending", ignoreCase = true) || it.status.contains("confirm", ignoreCase = true) }
+            else -> allAppointments.filter { it.status.equals(currentFilter, ignoreCase = true) }
         }
         adapter.updateData(filteredList, userMap)
     }
