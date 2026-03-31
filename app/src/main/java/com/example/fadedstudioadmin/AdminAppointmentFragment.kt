@@ -44,7 +44,6 @@ class AdminAppointmentFragment : Fragment() {
 
         rvAppointments.layoutManager = LinearLayoutManager(context)
 
-        // Setup Adapter with click actions
         adapter = AdminAppointmentAdapter(
             emptyList(),
             userMap,
@@ -54,47 +53,37 @@ class AdminAppointmentFragment : Fragment() {
         )
         rvAppointments.adapter = adapter
 
-        // Setup Filter Buttons
         btnPending.setOnClickListener { setFilter("Pending") }
         btnAccepted.setOnClickListener { setFilter("Accepted") }
         btnCompleted.setOnClickListener { setFilter("Completed") }
         btnRejected.setOnClickListener { setFilter("Rejected") }
         btnAll.setOnClickListener { setFilter("All") }
 
-        // Start fetching data
         fetchAllUserNames()
 
         return view
     }
 
     private fun fetchAllUserNames() {
-        // 1. Check lowercase 'users'
         db.collection("users").addSnapshotListener { snapshots, _ ->
             snapshots?.documents?.forEach { doc ->
-                // FIX: Grab the actual 'uid' field, not the document ID
                 val uid = doc.getString("uid") ?: doc.id
-
                 val fName = doc.getString("firstName") ?: "Unknown"
                 val lName = doc.getString("lastName") ?: ""
                 val phone = doc.getString("phone") ?: "No phone"
 
-                // Bundle Name and Phone together with a line break!
                 userMap[uid] = "$fName $lName\n📞 $phone".trim()
             }
 
-            // 2. Check uppercase 'Users' just in case
             db.collection("Users").addSnapshotListener { snapshots2, _ ->
                 snapshots2?.documents?.forEach { doc ->
                     val uid = doc.getString("uid") ?: doc.id
-
                     val fName = doc.getString("firstName") ?: doc.getString("name") ?: "Unknown"
                     val lName = doc.getString("lastName") ?: ""
                     val phone = doc.getString("phone") ?: "No phone"
 
                     userMap[uid] = "$fName $lName\n📞 $phone".trim()
                 }
-
-                // Now get appointments once mapping is done
                 fetchAppointments()
             }
         }
@@ -107,11 +96,22 @@ class AdminAppointmentFragment : Fragment() {
             allAppointments.clear()
             snapshots?.documents?.forEach { document ->
                 try {
+                    // FIX: Catching different possible field names from your database
+                    val dbBarber = document.getString("barberName") ?: document.getString("barber") ?: "Any Barber"
+
+                    // Catching date and time whether they are saved together or separately
+                    val dbDate = document.getString("date") ?: ""
+                    val dbTime = document.getString("time") ?: ""
+                    val dbDateTime = document.getString("dateTime") ?: "$dbDate $dbTime".trim()
+
+                    val finalDateTime = if (dbDateTime.isNotEmpty()) dbDateTime else "No Date Selected"
+
                     val apt = Appointment(
                         appointmentId = document.id,
                         userId = document.getString("userId") ?: "",
                         serviceName = document.getString("serviceName") ?: "Unknown Service",
-                        dateTime = document.getString("dateTime") ?: "No Date",
+                        barberName = dbBarber,
+                        dateTime = finalDateTime,
                         status = document.getString("status") ?: "Pending"
                     )
                     allAppointments.add(apt)
@@ -119,7 +119,6 @@ class AdminAppointmentFragment : Fragment() {
                     Log.e("AdminApp", "Error parsing appointment", e)
                 }
             }
-            // Real-time listener automatically updates the UI!
             applyFilter()
         }
     }

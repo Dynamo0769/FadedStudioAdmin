@@ -36,25 +36,25 @@ class AdminAppointmentAdapter(
     override fun onBindViewHolder(holder: AppointmentViewHolder, position: Int) {
         val apt = appointments[position]
 
-        // Use the map to find the name. If not found, it shows "Unknown Customer"
-        val firstName = userMap[apt.userId] ?: "Unknown Customer"
-        holder.tvName.text = firstName
+        // 1. Set Name & Phone
+        val userInfo = userMap[apt.userId] ?: "Unknown Customer"
+        holder.tvName.text = userInfo
 
-        holder.tvService.text = "Service: ${apt.serviceName}"
-        holder.tvDateTime.text = apt.dateTime
+        // 2. Set Service AND Barber
+        holder.tvService.text = "Service: ${apt.serviceName}\nBarber: ${apt.barberName}"
 
-        // FIX: Made this more flexible so buttons ALWAYS show for new bookings
+        // 3. Set Date & Time
+        holder.tvDateTime.text = "📅 ${apt.dateTime}"
+
         val isPending = apt.status.contains("confirm", ignoreCase = true) || apt.status.contains("Pending", ignoreCase = true)
         val isAccepted = apt.status.equals("Accepted", ignoreCase = true)
 
         val displayStatus = if (isPending) "PENDING" else apt.status.uppercase()
         holder.tvStatus.text = displayStatus
 
-        // Show/Hide buttons based on real status
         holder.llActionButtons.visibility = if (isPending) View.VISIBLE else View.GONE
         holder.btnComplete.visibility = if (isAccepted) View.VISIBLE else View.GONE
 
-        // Color coding
         when (displayStatus) {
             "PENDING" -> holder.tvStatus.setTextColor(Color.parseColor("#FFA500"))
             "ACCEPTED" -> holder.tvStatus.setTextColor(Color.parseColor("#00FF00"))
@@ -62,7 +62,6 @@ class AdminAppointmentAdapter(
             "REJECTED" -> holder.tvStatus.setTextColor(Color.parseColor("#FF0000"))
         }
 
-        // Click Listeners
         holder.btnAccept.setOnClickListener { onAcceptClick(apt) }
         holder.btnReject.setOnClickListener { onRejectClick(apt) }
         holder.btnComplete.setOnClickListener { onCompleteClick(apt) }
